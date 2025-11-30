@@ -1,6 +1,7 @@
 package main
 
 import (
+	"mytro-backend-auth/internal/infrastructure/app"
 	"mytro-backend-auth/internal/infrastructure/config"
 	"mytro-backend-auth/internal/infrastructure/database"
 	"mytro-backend-auth/internal/infrastructure/logger"
@@ -28,4 +29,7 @@ func main() {
 		// If there is an error creating the database connection, panic with the error
 		panic(err)
 	}
+
+	app := app.NewApp(config, db, logger)
+
 }
