@@ -1,0 +1,95 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+
+# Test binaries
+*.test
+
+# Go work files (Go 1.18+)
+go.work
+go.work.sum
+
+# Dependency directories
+/vendor/
+
+# Build and cache
+/bin/
+/dist/
+/build/
+/target/
+.cache/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+.atom/
+.vs/
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.*
+
+# Documentation and local files
+docs/
+doc/
+notes/
+TODO.md
+
+# Coverage and profiling
+coverage.out
+profile.out
+*.profile
+
+# Docker and containers
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# Local config / secrets
+config/local.yaml
+config/development.yaml
+secrets/
+*.pem
+*.key
+*.crt
+
+# Generated web assets (if applicable)
+static/css/
+static/js/
+static/img/
+assets/
+node_modules/
+package-lock.json
+yarn.lock
+
+# Database files
+*.sqlite
+*.db
+*.mdb
+
+# Backup files
+*~
+\#*\#
