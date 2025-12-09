@@ -6,13 +6,15 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	Logging  LoggingConfig
+	CORS     CORSConfig
 }
 
 type ServerConfig struct {
-	Host         string
-	Port         int
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
+	Host           string
+	Port           int
+	ReadTimeout    time.Duration
+	WriteTimeout   time.Duration
+	RequestTimeout time.Duration
 }
 
 type DatabaseConfig struct {
@@ -27,6 +29,13 @@ type LoggingConfig struct {
 	Format   string
 	Output   string
 	FilePath string
+}
+
+type CORSConfig struct {
+	AllowedOrigins   []string
+	AllowedMethods   []string
+	AllowedHeaders   []string
+	AllowCredentials bool
 }
 
 func LoadFromEnv() (*Config, error) {

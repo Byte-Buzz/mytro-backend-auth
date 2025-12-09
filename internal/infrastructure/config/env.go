@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -13,8 +14,9 @@ func (c *Config) loadFromEnv() error {
 	// Server
 	c.Server.Host = getEnv(prefix+"SERVER_HOST", "0.0.0.0")
 	c.Server.Port = getIntEnv(prefix+"SERVER_PORT", 8080)
-	c.Server.ReadTimeout = getDurationEnv(prefix+"SERVER_READ_TIMEOUT", 60*time.Second)
-	c.Server.WriteTimeout = getDurationEnv(prefix+"SERVER_WRITE_TIMEOUT", 120*time.Second)
+	c.Server.ReadTimeout = getDurationEnv(prefix+"SERVER_READ_TIMEOUT", 10*time.Second)
+	c.Server.WriteTimeout = getDurationEnv(prefix+"SERVER_WRITE_TIMEOUT", 20*time.Second)
+	c.Server.RequestTimeout = getDurationEnv(prefix+"SERVER_REQUEST_TIMEOUT", 10*time.Second)
 
 	// Database
 	c.Database.DSN = getEnv(prefix+"DATABASE_DSN", "")
@@ -27,6 +29,17 @@ func (c *Config) loadFromEnv() error {
 	c.Logging.Format = getEnv(prefix+"LOGGING_FORMAT", "json")
 	c.Logging.Output = getEnv(prefix+"LOGGING_OUTPUT", "stdout")
 	c.Logging.FilePath = getEnv(prefix+"LOGGING_FILE_PATH", "/var/log/mt-auth.log")
+
+	// CORS
+	c.CORS.AllowedOrigins = getArrayEnv(prefix+"CORS_ALLOWED_ORIGINS", []string{"*"})
+	c.CORS.AllowedMethods = getArrayEnv(prefix+"CORS_ALLOWED_METHODS", []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
+	c.CORS.AllowedHeaders = getArrayEnv(prefix+"CORS_ALLOWED_HEADERS", []string{
+		"Origin",
+		"Content-Type",
+		"Authorization",
+		"X-Requested-With",
+	})
+	c.CORS.AllowCredentials = getEnv(prefix+"CORS_ALLOW_CREDENTIALS", "false") == "true"
 
 	return nil
 }
@@ -71,4 +84,25 @@ func getDurationEnv(key string, defaultValue time.Duration) time.Duration {
 		return defaultValue
 	}
 	return duration
+}
+
+// getArrayEnv returns the value of the environment variable with the given key,
+// split by commas into a slice of strings. If the variable does not exist,
+// or its value is empty, the defaultValue is returned.
+func getArrayEnv(key string, defaultValue []string) []string {
+	valueStr, exists := os.LookupEnv(key)
+	if !exists || valueStr == "" {
+		return defaultValue
+	}
+	var values []string
+	for v := range strings.SplitSeq(valueStr, ",") {
+		if v == "" {
+			continue
+		}
+
+		v := strings.TrimLeft(v, " ")
+
+		values = append(values, v)
+	}
+	return values
 }
