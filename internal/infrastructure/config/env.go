@@ -28,7 +28,7 @@ func (c *Config) loadFromEnv() error {
 	c.Logging.Level = getEnv(prefix+"LOGGING_LEVEL", "info")
 	c.Logging.Format = getEnv(prefix+"LOGGING_FORMAT", "json")
 	c.Logging.Output = getEnv(prefix+"LOGGING_OUTPUT", "stdout")
-	c.Logging.FilePath = getEnv(prefix+"LOGGING_FILE_PATH", "/var/log/mt-auth.log")
+	c.Logging.FilePath = getEnv(prefix+"LOGGING_FILE_PATH", "")
 
 	// CORS
 	c.CORS.AllowedOrigins = getArrayEnv(prefix+"CORS_ALLOWED_ORIGINS", []string{"*"})
