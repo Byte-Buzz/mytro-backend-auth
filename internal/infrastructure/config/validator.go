@@ -1,6 +1,10 @@
 package config
 
-import "errors"
+import (
+	"errors"
+	"os"
+	"strings"
+)
 
 // Validate checks that the configuration is valid and returns an error if it is not.
 // This function checks that all configuration options are valid and returns
@@ -35,6 +39,29 @@ func (c *Config) Validate() error {
 	default:
 		return errors.New("logging.output must be one of stdout, stderr")
 	}
+
+	// Check that the keys are set
+	c.Keys.privateKey = strings.TrimSpace(c.Keys.privateKey)
+	if c.Keys.privateKey == "" {
+		return errors.New("keys.private_key is required")
+	}
+
+	publicKey, err := os.ReadFile(c.Keys.publicKey)
+	if err != nil {
+		return errors.New("failed to read public key file: " + err.Error())
+	}
+	c.Keys.publicKey = string(publicKey)
+
+	c.Keys.publicKey = strings.TrimSpace(c.Keys.publicKey)
+	if c.Keys.publicKey == "" {
+		return errors.New("keys.public_key is required")
+	}
+
+	privateKey, err := os.ReadFile(c.Keys.privateKey)
+	if err != nil {
+		return errors.New("failed to read private key file: " + err.Error())
+	}
+	c.Keys.privateKey = string(privateKey)
 
 	return nil
 }
