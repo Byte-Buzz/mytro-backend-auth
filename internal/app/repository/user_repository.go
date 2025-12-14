@@ -41,6 +41,9 @@ func (r *userRepository) Save(ctx context.Context, user *models.User) error {
 	}
 
 	userDTO := r.toDTO(*user)
+	if userDTO.ID == uuid.Nil {
+		userDTO.ID = uuid.New()
+	}
 
 	return r.db.WithContext(ctx).Save(&userDTO).Error
 }
@@ -53,6 +56,7 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 	}
 
 	userDTO := r.toDTO(*user)
+	userDTO.ID = uuid.New()
 
 	return r.db.WithContext(ctx).Create(&userDTO).Error
 }

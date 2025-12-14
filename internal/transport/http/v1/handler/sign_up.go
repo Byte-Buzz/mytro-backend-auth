@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SignUpHandler(app *app.App) gin.HandlerFunc {
+func SignUpByEmailHandler(app *app.App) gin.HandlerFunc {
 	userService := app.Services.UserService
 
 	return func(c *gin.Context) {

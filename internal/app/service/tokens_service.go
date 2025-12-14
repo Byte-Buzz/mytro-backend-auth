@@ -30,7 +30,7 @@ func NewTokensService(keys *config.TokenConfig, logger *zap.Logger) *TokensServi
 		logger.Fatal("failed to parse PEM block containing the key")
 	}
 
-	privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
+	privateKey, err := x509.ParsePKCS8PrivateKey(privateKeyBlock.Bytes)
 	if err != nil {
 		logger.Fatal("failed to parse private key: " + err.Error())
 	}
@@ -70,10 +70,12 @@ func (s *TokensService) GenerateTokens(claims jwt.Claims) (*models.Tokens, error
 		return nil, err
 	}
 
+	expirationTime := now.Add(s.refreshTokenLifetime)
+
 	// Set claims for refresh token
 	refreshTokenClaims := jwt.MapClaims{
 		"sub":  accessTokenClaims["sub"],
-		"exp":  now.Add(s.refreshTokenLifetime).Unix(),
+		"exp":  expirationTime.Unix(),
 		"iat":  now.Unix(),
 		"jti":  accessTokenClaims["jti"],
 		"type": "refresh",
@@ -91,6 +93,44 @@ func (s *TokensService) GenerateTokens(claims jwt.Claims) (*models.Tokens, error
 		AccessToken:           accessTokenString,
 		RefreshToken:          refreshTokenString,
 		JTI:                   uuid.MustParse(accessTokenClaims["jti"].(string)),
-		RefreshTokenExpiresAt: refreshTokenClaims["exp"].(time.Time),
+		RefreshTokenExpiresAt: expirationTime,
 	}, nil
+}
+
+func (s *TokensService) ValidateRefreshToken(tokenString string) (uuid.UUID, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			s.logger.Error("unexpected signing method", zap.String("method", token.Header["alg"].(string)))
+			return nil, jwt.ErrTokenMalformed
+		}
+		return s.publicKey, nil
+	})
+	if err != nil {
+		s.logger.Error("failed to parse token", zap.Error(err))
+		return uuid.Nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if claims["type"] != "refresh" {
+			s.logger.Error("invalid token type", zap.String("type", claims["type"].(string)))
+			return uuid.Nil, jwt.ErrTokenMalformed
+		}
+
+		jtiStr, ok := claims["jti"].(string)
+		if !ok {
+			s.logger.Error("jti claim is missing or invalid")
+			return uuid.Nil, jwt.ErrTokenMalformed
+		}
+
+		jti, err := uuid.Parse(jtiStr)
+		if err != nil {
+			s.logger.Error("failed to parse jti claim", zap.Error(err))
+			return uuid.Nil, err
+		}
+
+		return jti, nil
+	} else {
+		s.logger.Error("invalid token claims")
+		return uuid.Nil, jwt.ErrTokenInvalidClaims
+	}
 }

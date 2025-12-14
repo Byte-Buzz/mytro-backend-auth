@@ -16,6 +16,7 @@ type SessionRepository interface {
 	Create(ctx context.Context, session *models.Session) error
 	Update(ctx context.Context, session *models.Session) error
 	Delete(ctx context.Context, id uuid.UUID) error
+	DeleteByJTI(ctx context.Context, jti uuid.UUID) error
 	DeleteAllByUserID(ctx context.Context, userID uuid.UUID) error
 }
 
@@ -45,6 +46,7 @@ func (r *sessionRepository) Create(ctx context.Context, session *models.Session)
 	}
 
 	sessionDTO := toSessionDTO(*session)
+	sessionDTO.ID = uuid.New()
 
 	return r.db.WithContext(ctx).Create(&sessionDTO).Error
 }
@@ -59,6 +61,10 @@ func (r *sessionRepository) Update(ctx context.Context, session *models.Session)
 
 func (r *sessionRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("jti = ?", id).Delete(&models.Session{}).Error
+}
+
+func (r *sessionRepository) DeleteByJTI(ctx context.Context, jti uuid.UUID) error {
+	return r.db.WithContext(ctx).Where("jti = ?", jti).Delete(&models.Session{}).Error
 }
 
 func (r *sessionRepository) DeleteAllByUserID(ctx context.Context, userID uuid.UUID) error {

@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"os"
 	"strings"
 )
 
@@ -45,10 +46,22 @@ func (c *Config) Validate() error {
 		return errors.New("keys.private_key is required")
 	}
 
+	publicKey, err := os.ReadFile(c.Keys.publicKey)
+	if err != nil {
+		return errors.New("failed to read public key file: " + err.Error())
+	}
+	c.Keys.publicKey = string(publicKey)
+
 	c.Keys.publicKey = strings.TrimSpace(c.Keys.publicKey)
 	if c.Keys.publicKey == "" {
 		return errors.New("keys.public_key is required")
 	}
+
+	privateKey, err := os.ReadFile(c.Keys.privateKey)
+	if err != nil {
+		return errors.New("failed to read private key file: " + err.Error())
+	}
+	c.Keys.privateKey = string(privateKey)
 
 	return nil
 }

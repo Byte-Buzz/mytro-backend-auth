@@ -7,6 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(router *gin.Engine, app *app.App) {
-	router.POST("/sign-up", handler.SignUpHandler(app))
+func RegisterRoutes(router *gin.RouterGroup, app *app.App) {
+	emailGroup := router.Group("/email")
+	{
+		emailGroup.POST("/sign-up", handler.SignUpByEmailHandler(app))
+		emailGroup.POST("/sign-in", handler.SignInByEmailHandler(app))
+	}
+	router.POST("/sign-out", handler.SignOutHandler(app))
+	router.POST("/refresh", handler.UpdateSessionHandler(app))
 }

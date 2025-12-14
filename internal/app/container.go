@@ -19,11 +19,14 @@ type App struct {
 }
 
 type AppServices struct {
-	UserService *service.UserService
+	SessionService *service.SessionService
+	TokensService  *service.TokensService
+	UserService    *service.UserService
 }
 
 type AppRepositories struct {
-	UserRepository repository.UserRepository
+	SessionRepository repository.SessionRepository
+	UserRepository    repository.UserRepository
 }
 
 func NewApp(config *config.Config, db *gorm.DB, logger *zap.Logger) *App {
@@ -43,9 +46,17 @@ func NewApp(config *config.Config, db *gorm.DB, logger *zap.Logger) *App {
 }
 
 func (app *App) createRepositories() {
+	app.repositories.SessionRepository = repository.NewSessionRepository(app.DB, app.Logger)
 	app.repositories.UserRepository = repository.NewUserRepository(app.DB, app.Logger)
 }
 
 func (app *App) createServices() {
+	app.Services.TokensService = service.NewTokensService(&app.Config.Keys, app.Logger)
+	app.Services.SessionService = service.NewSessionService(
+		app.repositories.SessionRepository,
+		app.repositories.UserRepository,
+		app.Services.TokensService,
+		app.Logger,
+	)
 	app.Services.UserService = service.NewUserService(app.repositories.UserRepository, app.Logger)
 }
