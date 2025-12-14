@@ -41,6 +41,14 @@ func (c *Config) loadFromEnv() error {
 	})
 	c.CORS.AllowCredentials = getEnv(prefix+"CORS_ALLOW_CREDENTIALS", "false") == "true"
 
+	// Keys
+	c.Keys.privateKey = getEnv(prefix+"KEYS_PRIVATE_KEY", "")
+	c.Keys.publicKey = getEnv(prefix+"KEYS_PUBLIC_KEY", "")
+
+	// Tokens lifetimes
+	c.Keys.PrivateTokenLifetime = getDurationEnv(prefix+"TOKENS_REFRESH_TOKEN_LIFETIME", 30*24*time.Hour)
+	c.Keys.PublicTokenLifetime = getDurationEnv(prefix+"TOKENS_ACCESS_TOKEN_LIFETIME", 15*time.Minute)
+
 	return nil
 }
 

@@ -7,6 +7,7 @@ type Config struct {
 	Database DatabaseConfig
 	Logging  LoggingConfig
 	CORS     CORSConfig
+	Keys     TokenConfig
 }
 
 type ServerConfig struct {
@@ -36,6 +37,26 @@ type CORSConfig struct {
 	AllowedMethods   []string
 	AllowedHeaders   []string
 	AllowCredentials bool
+}
+
+type TokenConfig struct {
+	PublicTokenLifetime  time.Duration
+	PrivateTokenLifetime time.Duration
+
+	privateKey string
+	publicKey  string
+}
+
+func (k *TokenConfig) PrivateKey() string {
+	key := k.privateKey
+	k.privateKey = ""
+	return key
+}
+
+func (k *TokenConfig) PublicKey() string {
+	key := k.publicKey
+	k.publicKey = ""
+	return key
 }
 
 func LoadFromEnv() (*Config, error) {
